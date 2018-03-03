@@ -2,9 +2,6 @@
 
 (provide greedy)
 
-(require data/heap)
-(require "data-reader.rkt")
-
 
 (define (greedy size flow-matrix distance-matrix)
   (define potential-flows-vector (make-vector size '(0 0)))
