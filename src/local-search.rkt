@@ -3,5 +3,5 @@
 (provide local-search)
 
 
-(define (local-search file iterations)
-  (displayln (format "Executing the local-search algorithm in ~a" file)))
+(define (local-search size flow-matrix distance-matrix iterations)
+  (displayln "Executing the local-search algorithm"))
