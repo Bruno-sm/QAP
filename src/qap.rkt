@@ -51,8 +51,8 @@
 (define (solution-goodness solution flow-matrix distance-matrix)
   (define goodness 0)
   (define n (length solution))
-  (for ([unit-i solution] [location-i n])
-    (for ([unit-j solution] [location-j n])
+  (for ([location-i solution] [unit-i n])
+    (for ([location-j solution] [unit-j n])
       (set! goodness
             (+ goodness
                (* (vector-ref (vector-ref distance-matrix location-i) location-j)

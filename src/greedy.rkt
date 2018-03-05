@@ -19,6 +19,6 @@
   (define solution-vector (make-vector size 0))
   (for ([i size])
     (vector-set! solution-vector
-                 (first (vector-ref potential-distances-vector i))
-                 (first (vector-ref potential-flows-vector i))))
+                 (first (vector-ref potential-flows-vector i))
+                 (first (vector-ref potential-distances-vector i))))
   (vector->list solution-vector))
