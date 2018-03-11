@@ -1,7 +1,7 @@
 #lang racket
 
 
-(provide qap-goodness qap-goodness-permutation-diff)
+(provide qap-goodness qap-goodness-permutation-diff permute!)
 
 (require "vector.rkt")
 
@@ -17,7 +17,6 @@
                   (matrix-ref flow-matrix unit-i unit-j))))))
   goodness)
 
-
 (define (qap-goodness-permutation-diff solution-vector i j flow-matrix distance-matrix)
   (define goodness-diff 0)
   (define location-i (vector-ref solution-vector i))
@@ -32,3 +31,13 @@
                               (- (matrix-ref distance-matrix location-i location-k)
                                  (matrix-ref distance-matrix location-j location-k))))))
   (* 2 goodness-diff))
+
+(define/match (permute! solution-vector . indexes)
+  [(sol '()) sol]
+  [(sol indexes)
+   (match-define (list i j) (first indexes))
+   (define aux (vector-ref sol i))
+   (vector-set! sol i (vector-ref sol j)) 
+   (vector-set! sol j aux)
+   (apply permute! (cons sol (rest indexes)))])
+
