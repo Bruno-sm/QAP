@@ -1,7 +1,7 @@
 #lang racket
 
 (require racket/cmdline)
-(require "data-reader.rkt" "goodness.rkt")
+(require "data-reader.rkt" "qap-representation-utils.rkt")
 (require "greedy.rkt" "local-search.rkt")
 
 
@@ -39,10 +39,13 @@
     [("--local-search-bn")
      "Uses the local search algorithm with best neighbor selection"
      (set-cli-options-algorithm! options 'local-bn)]
+    [("--local-search-vnd")
+     "Uses the local search algorithm with variable neighbourhood descent"
+     (set-cli-options-algorithm! options 'local-vnd)]
     #:args (file . more-files) (set! files (cons file more-files)))
   (set! files (map (lambda (f) (build-path (current-directory) f)) files))  
   (cond [(symbol=? (cli-options-output-mode options) 'csv)
-         (displayln "Case,repetitions,best_value,values_mean,opt_value,cpu_ms,real_ms,gc_ms")])
+         (displayln "Case,size,repetitions,best_value,values_mean,opt_value,cpu_ms,real_ms,gc_ms")])
   (match-define-values (algorithm alg-args)
     (let ([alg (cli-options-algorithm options)])
       (cond
@@ -52,7 +55,11 @@
                                 ,best-first-dlb-selection))]
         [(symbol=? alg 'local-bn)
          (values local-search `(,(cli-options-max-iterations options)
-                                ,best-neighbor-selection))])))
+                                ,best-neighbor-selection))]
+        [(symbol=? alg 'local-vnd)
+         (values local-search `(,(cli-options-max-iterations options)
+                                ,vnd-selection))])))
+
   (for-each (lambda (file) (print-solution algorithm file options alg-args)) files))
 
 (define (print-solution algorithm file cli-options [args empty])
@@ -82,8 +89,9 @@
                        (read-sln (path-replace-extension file #".sln")))
   (cond
     [(symbol=? (cli-options-output-mode cli-options) 'csv)
-     (displayln (format "~a,~a,~a,~a,~a,~a,~a,~a"
+     (displayln (format "~a,~a,~a,~a,~a,~a,~a,~a,~a"
                         (file-name-from-path file)
+                        size
                         (cli-options-executions-number cli-options)
                         solution-goodness goodness-mean opt-goodness
                         cpu-ms real-ms gc-ms))]

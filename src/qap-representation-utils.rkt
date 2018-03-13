@@ -31,7 +31,7 @@
     (define location-p* (vector-ref permutated-solution unit-p))
       (for ([unit-k size] [location-k solution-vector] [location-k* permutated-solution]
             #:unless (or (vector-ref counted-indexes unit-k) (= unit-k unit-p) (and (= location-k location-p*) (= location-k* location-p))))
-            (displayln (format "+ f(~a,~a)*(d(~a,~a)-d(~a,~a))" unit-p unit-k location-p* location-k location-p location-k))
+;            (displayln (format "+ f(~a,~a)*(d(~a,~a)-d(~a,~a))" unit-p unit-k location-p* location-k location-p location-k))
             (set! goodness-diff (+ goodness-diff
                                    (* (matrix-ref flow-matrix unit-p unit-k)
                                       (- (matrix-ref distance-matrix location-p* location-k*)
