@@ -20,16 +20,16 @@
 
 (define best-first-dlb-selection
   (list (lambda (solution-vector goodness-permutation-diff dlb-vector)
-;          (displayln (format "Searching first better neighbor for ~a" solution-vector))
+          (displayln (format "Searching first better neighbor for ~a" solution-vector))
           (define improves #f)
           (define size (vector-length solution-vector))
           (for ([i size] #:unless (vector-ref dlb-vector i) #:break improves) 
             (for ([j size] #:unless (= i j) #:break improves)
               (define g-diff (goodness-permutation-diff solution-vector (list i j)))
-;              (displayln (format "Goodness diff permutation ~a: ~a" `(,i ,j) g-diff))
+              (displayln (format "Goodness diff permutation ~a: ~a" `(,i ,j) g-diff))
               (cond [(< g-diff 0)
                      (permute! solution-vector (list i j))
-;                     (displayln (format "Better neighbor ~a" solution-vector))
+                     (displayln (format "Better neighbor ~a" solution-vector))
                      (vector-set! dlb-vector i #f)
                      (vector-set! dlb-vector j #f)
                      (set! improves #t)]))
@@ -40,19 +40,19 @@
 
 (define best-neighbor-selection
   (list (lambda (solution-vector goodness-permutation-diff)
-;          (displayln (format "Searching best neighbor for ~a" solution-vector))
+          (displayln (format "Searching best neighbor for ~a" solution-vector))
           (define best-permutation '(0 0))
           (define best-permutation-diff 0)
           (define size (vector-length solution-vector))
           (for* ([i size] [j size] #:unless (= i j))
             (define g-diff (goodness-permutation-diff solution-vector (list i j)))
-;            (displayln (format "Goodness diff permutation ~a: ~a" `(,i ,j) g-diff))
+            (displayln (format "Goodness diff permutation ~a: ~a" `(,i ,j) g-diff))
             (cond [(< g-diff best-permutation-diff)
             (set! best-permutation (list i j))
             (set! best-permutation-diff g-diff)]))
           (cond [(< best-permutation-diff 0)
                  (permute! solution-vector best-permutation)
-;                 (displayln (format "Best neighbor ~a" solution-vector))
+                 (displayln (format "Best neighbor ~a" solution-vector))
                  #f]
                 [else #t]))
         ; Builds extra parameters for best-neighbor-selection
@@ -64,6 +64,7 @@
           (define size (vector-length solution-vector))
           (define neigh-gen! (vector-ref neighbor-structures 0))
           (for ([k 3] #:break (not is-local-max))
+            (displayln (format "Using neigbourhood ~a" k))
             (set! neigh-gen! (vector-ref neighbor-structures k))
             (set! is-local-max 
               (neigh-gen! solution-vector goodness-permutation-diff (vector-ref dlb-vectors k)))

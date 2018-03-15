@@ -29,6 +29,9 @@
     [("--csv-output")
      "Displays the output in csv format"
      (set-cli-options-output-mode! options 'csv)]
+    [("--debug-output")
+     "Displays the output in csv format"
+     (set-cli-options-output-mode! options 'debug)]
     #:once-any
     [("--greedy")
      "Uses the greedy algorithm"
@@ -71,8 +74,11 @@
   (define real-ms 0.0)
   (define gc-ms 0.0)
   (for ([i (cli-options-executions-number cli-options)])
+    (define output-port (if (symbol=? (cli-options-output-mode cli-options) 'debug)
+                            (current-output-port) (open-output-nowhere)))
     (match-define-values (ret cpu-ms* real-ms* gc-ms*)
-                         (time-apply algorithm (append (list size fm dm) args)))
+                         (parameterize ([current-output-port output-port])
+                           (time-apply algorithm (append (list size fm dm) args))))
     (set! cpu-ms (+ cpu-ms cpu-ms*))
     (set! real-ms (+ real-ms real-ms*))
     (set! gc-ms (+ gc-ms gc-ms*))
