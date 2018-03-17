@@ -44,7 +44,7 @@
           (define best-permutation '(0 0))
           (define best-permutation-diff 0)
           (define size (vector-length solution-vector))
-          (for* ([i size] [j size] #:unless (= i j))
+          (for* ([i size] [j i])
             (define g-diff (goodness-permutation-diff solution-vector (list i j)))
             (displayln (format "Goodness diff permutation ~a: ~a" `(,i ,j) g-diff))
             (cond [(< g-diff best-permutation-diff)
