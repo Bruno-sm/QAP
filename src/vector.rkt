@@ -24,4 +24,4 @@
   (vector-ref (vector-ref matrix j) i))
 
 (define (matrix-set! matrix i j val)
-  (vector-set! (vector-ref matrix i) j val))
+  (vector-set! (vector-ref matrix j) i val))
