@@ -17,7 +17,7 @@
 
 (define (make-matrix n m [val 0])
   (define matrix (make-vector n))
-  (for ([i n]) (vector-set! matrix i (make-vector m 0)))
+  (for ([i n]) (vector-set! matrix i (make-vector m val)))
   matrix)
 
 (define (matrix-ref matrix i j)
