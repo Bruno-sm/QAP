@@ -8,11 +8,12 @@ Diferent solutions to the quadratic assignment problem for the metaheuristic pra
   - Best-first with DLB mask
   - Best neighbour
   - Variable neighbourhood descent
+  - Short term memory tabu search
 
   
 ## Usage
 ```bash
-racket qap.rkt [--help] [--csv-output | --debug-output] [-m max_iterations] [-r repetitions_per_file] [--greedy | --local-search-bf | --local-search-bn | --local-search-vnd] file1...
+racket qap.rkt [--help] [--csv-output | --debug-output] [-m max_iterations] [-r repetitions_per_file] [--greedy | --local-search-bf | --local-search-bn | --local-search-vnd | --stm-tabu-search] file1...
 ```
 Example:
 ```bash
@@ -29,3 +30,4 @@ racket qap.rkt --csv-output -m 20000 -r 50 --local-search-bf data/*.dat
 - `--local-search-bf` Executes the local search with best-first selection algorithm
 - `--local-search-bn` Executes the local search with best neighbour selection algorithm
 - `--local-search-vnd` Executes the local search with variable neighbourhood descent 
+- `--stm-tabu-search` Executes the short term memory tabu search 

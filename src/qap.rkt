@@ -2,7 +2,7 @@
 
 (require racket/cmdline)
 (require "data-reader.rkt" "qap-representation-utils.rkt")
-(require "greedy.rkt" "local-search.rkt")
+(require "greedy.rkt" "local-search.rkt" "tabu-search.rkt")
 
 
 (struct cli-options (algorithm
@@ -45,6 +45,9 @@
     [("--local-search-vnd")
      "Uses the local search algorithm with variable neighbourhood descent"
      (set-cli-options-algorithm! options 'local-vnd)]
+    [("--stm-tabu-search")
+     "Uses the local search algorithm with variable neighbourhood descent"
+     (set-cli-options-algorithm! options 'stm-tabu)]
     #:args (file . more-files) (set! files (cons file more-files)))
   (set! files (map (lambda (f) (build-path (current-directory) f)) files))  
   (cond [(symbol=? (cli-options-output-mode options) 'csv)
@@ -61,8 +64,9 @@
                                 ,best-neighbor-selection))]
         [(symbol=? alg 'local-vnd)
          (values local-search `(,(cli-options-max-iterations options)
-                                ,vnd-selection))])))
-
+                                ,vnd-selection))]
+        [(symbol=? alg 'stm-tabu)
+         (values stm-tabu-search `(,(cli-options-max-iterations options)))])))
   (for-each (lambda (file) (print-solution algorithm file options alg-args)) files))
 
 (define (print-solution algorithm file cli-options [args empty])
