@@ -51,7 +51,7 @@
     #:args (file . more-files) (set! files (cons file more-files)))
   (set! files (map (lambda (f) (build-path (current-directory) f)) files))  
   (cond [(symbol=? (cli-options-output-mode options) 'csv)
-         (displayln "Case,size,repetitions,best_value,values_mean,opt_value,cpu_ms,real_ms,gc_ms")])
+         (displayln "Case,size,repetitions,best_value,values_mean,values_deviation,opt_value,cpu_ms,real_ms,gc_ms")])
   (match-define-values (algorithm alg-args)
     (let ([alg (cli-options-algorithm options)])
       (cond
@@ -71,6 +71,8 @@
 
 (define (print-solution algorithm file cli-options [args empty])
   (match-define-values (size fm dm) (read-dat file))
+  (match-define-values (_ opt-goodness opt-solution)
+                       (read-sln (path-replace-extension file #".sln")))
   (define solution empty)
   (define solution-goodness -1)
   (define goodness-mean 0.0)
@@ -95,15 +97,15 @@
   (set! real-ms (/ real-ms (cli-options-executions-number cli-options)))
   (set! gc-ms (/ gc-ms (cli-options-executions-number cli-options)))
   (set! goodness-mean (/ goodness-mean (cli-options-executions-number cli-options)))
-  (match-define-values (_ opt-goodness opt-solution)
-                       (read-sln (path-replace-extension file #".sln")))
+  (define goodness-deviation (/ (round (* 10000 (/ (- goodness-mean opt-goodness) opt-goodness)))
+                                100))
   (cond
     [(symbol=? (cli-options-output-mode cli-options) 'csv)
-     (displayln (format "~a,~a,~a,~a,~a,~a,~a,~a,~a"
+     (displayln (format "~a,~a,~a,~a,~a,~a,~a,~a,~a,~a"
                         (file-name-from-path file)
                         size
                         (cli-options-executions-number cli-options)
-                        solution-goodness goodness-mean opt-goodness
+                        solution-goodness goodness-mean goodness-deviation opt-goodness
                         cpu-ms real-ms gc-ms))]
     [else
      (displayln (format "file: ~a" (path->string (file-name-from-path file))))
@@ -112,6 +114,7 @@
      (displayln (format "best solution: ~a" (map (lambda (x) (add1 x)) solution)))
      (displayln (format "best goodness: ~a" solution-goodness))
      (displayln (format "goodness mean: ~a" goodness-mean))
+     (displayln (format "goodness deviation: ~a" goodness-deviation))
      (displayln (format "optimal solution: ~a" opt-solution))
      (displayln (format "optimal goodness: ~a" opt-goodness))
      (displayln (format "cpu mlliseconds mean: ~a" cpu-ms))
