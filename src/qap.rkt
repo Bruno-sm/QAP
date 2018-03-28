@@ -8,11 +8,12 @@
 (struct cli-options (algorithm
                      executions-number
                      max-iterations
+                     seed
                      output-mode)
                     #:mutable)
 
 (define (main)
-  (define options (cli-options 'greedy 1 50000 'human-readable))
+  (define options (cli-options 'greedy 1 50000 (current-seconds) 'human-readable))
   (define files empty)
   (command-line
     #:program "qap"
@@ -25,6 +26,10 @@
      exec-number
      "Number of executions for each case. The result is the mean of all executions"
      (set-cli-options-executions-number! options (string->number exec-number))]
+    [("-s" "--seed")
+     seed 
+     "seed for the random numbers generator"
+     (set-cli-options-seed! options (string->number seed))]
     #:once-any
     [("--csv-output")
      "Displays the output in csv format"
@@ -49,6 +54,7 @@
      "Uses the local search algorithm with variable neighbourhood descent"
      (set-cli-options-algorithm! options 'stm-tabu)]
     #:args (file . more-files) (set! files (cons file more-files)))
+  (random-seed (cli-options-seed options))
   (set! files (map (lambda (f) (build-path (current-directory) f)) files))  
   (cond [(symbol=? (cli-options-output-mode options) 'csv)
          (displayln "Case,size,repetitions,best_value,values_mean,values_deviation,opt_value,cpu_ms,real_ms,gc_ms")])
