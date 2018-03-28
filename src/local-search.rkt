@@ -72,9 +72,9 @@
           is-local-max)
         (lambda (size) (list (vector (make-vector size #f) (make-vector size #f) (make-vector size #f))))))
 
-; Neighbor structures for vnd and nvns selection methods
+; Neighbor structures for vnd
 (define neighbor-structures
-    ; Selects the first better neighbor with two elements permutations
+    ; Selects the first better neighbor with a transposition
   (list->vector
   `(,(lambda (sol goodness-permutation-diff dlb-vector)
        (define improves #f)
@@ -90,7 +90,7 @@
          (cond [(not improves) (vector-set! dlb-vector i #t)]))
        (not improves))
 
-    ; Selects the first better neighbor with three and four elements permutations
+    ; Selects the first better neighbor with three elements permutations
     ,(lambda (sol goodness-permutation-diff dlb-vector)
        (define improves #f)
        (define size (vector-length sol))
@@ -107,7 +107,7 @@
          (cond [(not improves) (vector-set! dlb-vector i #t)]))
        (not improves))
 
-    ; Selects the first better neighbor with five and six elements permutations
+    ; Selects the first better neighbor with four elements permutations
     ,(lambda (sol goodness-permutation-diff dlb-vector)
        (define improves #f)
        (define size (vector-length sol))
