@@ -1,7 +1,7 @@
 #lang racket
 
 
-(provide vector-foldl vector-shuffle)
+(provide vector-foldl vector-shuffle vector-index-max)
 (provide make-matrix matrix-ref matrix-set!)
 
 
@@ -14,6 +14,16 @@
 
 (define (vector-shuffle vec)
   (list->vector (shuffle (vector->list vec))))
+
+(define (vector-index-max vec proc)
+  (define index-max 0)
+  (define max-val (proc (vector-ref vec index-max)))
+  (for ([i (vector-length vec)])
+    (define val (proc (vector-ref vec i)))
+    (cond [(> val max-val)
+           (set! max-val val)
+           (set! index-max i)]))
+  index-max)
 
 (define (make-matrix n m [val 0])
   (define matrix (make-vector n))
