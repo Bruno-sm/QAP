@@ -7,7 +7,7 @@
 
 (struct cli-options (algorithm
                      executions-number
-                     max-iterations
+                     max-evaluations
                      seed
                      output-mode)
                     #:mutable)
@@ -18,10 +18,10 @@
   (command-line
     #:program "qap"
     #:once-each
-    [("-m" "--max-iterations")
-     mi
-     "Maximum number of iterations inside an algorithm"
-     (set-cli-options-max-iterations! options (string->number mi))]
+    [("-m" "--max-evaluations")
+     me
+     "Maximum number of evaluations inside an algorithm"
+     (set-cli-options-max-evaluations! options (string->number me))]
     [("-r" "--repetitions")
      exec-number
      "Number of executions for each case. The result is the mean of all executions"
@@ -93,54 +93,54 @@
       (cond
         [(symbol=? alg 'greedy) (values greedy empty)]
         [(symbol=? alg 'local-bf)
-         (values local-search `(,(cli-options-max-iterations options)
+         (values local-search `(,(cli-options-max-evaluations options)
                                 ,best-first-dlb-selection))]
         [(symbol=? alg 'local-bn)
-         (values local-search `(,(cli-options-max-iterations options)
+         (values local-search `(,(cli-options-max-evaluations options)
                                 ,best-neighbor-selection))]
         [(symbol=? alg 'local-vnd)
-         (values local-search `(,(cli-options-max-iterations options)
+         (values local-search `(,(cli-options-max-evaluations options)
                                 ,vnd-selection))]
         [(symbol=? alg 'stm-tabu)
-         (values stm-tabu-search `(,(cli-options-max-iterations options)))]
+         (values stm-tabu-search `(,(cli-options-max-evaluations options)))]
         [(symbol=? alg 'gen-gp)
-         (values genetic-generational `(,(cli-options-max-iterations options)
+         (values genetic-generational `(,(cli-options-max-evaluations options)
                                         ,position-crossover
                                         50 0.7 0.001))]
         [(symbol=? alg 'gen-gpmx)
-         (values genetic-generational `(,(cli-options-max-iterations options)
+         (values genetic-generational `(,(cli-options-max-evaluations options)
                                         ,pmx-crossover
                                         50 0.7 0.001))]
         [(symbol=? alg 'gen-sp)
-         (values genetic-steady `(,(cli-options-max-iterations options)
+         (values genetic-steady `(,(cli-options-max-evaluations options)
                                   ,position-crossover
                                   50 0.001))]
         [(symbol=? alg 'gen-spmx)
-         (values genetic-steady `(,(cli-options-max-iterations options)
+         (values genetic-steady `(,(cli-options-max-evaluations options)
                                   ,pmx-crossover
                                   50 0.001))]
         [(symbol=? alg 'mem-all-pos)
-         (values memetic-all `(,(cli-options-max-iterations options)
+         (values memetic-all `(,(cli-options-max-evaluations options)
                                ,position-crossover
                                10 0.7 0.001 10))]
         [(symbol=? alg 'mem-rand-pos)
-         (values memetic-rand `(,(cli-options-max-iterations options)
+         (values memetic-rand `(,(cli-options-max-evaluations options)
                                ,position-crossover
                                10 0.7 0.001 10))]
         [(symbol=? alg 'mem-best-pos)
-         (values memetic-rand `(,(cli-options-max-iterations options)
+         (values memetic-rand `(,(cli-options-max-evaluations options)
                                ,position-crossover
                                10 0.7 0.001 10))]
         [(symbol=? alg 'mem-all-pmx)
-         (values memetic-all `(,(cli-options-max-iterations options)
+         (values memetic-all `(,(cli-options-max-evaluations options)
                                ,pmx-crossover
                                10 0.7 0.001 10))]
         [(symbol=? alg 'mem-rand-pmx)
-         (values memetic-rand `(,(cli-options-max-iterations options)
+         (values memetic-rand `(,(cli-options-max-evaluations options)
                                ,pmx-crossover
                                10 0.7 0.001 10))]
         [(symbol=? alg 'mem-best-pmx)
-         (values memetic-rand `(,(cli-options-max-iterations options)
+         (values memetic-rand `(,(cli-options-max-evaluations options)
                                ,pmx-crossover
                                10 0.7 0.001 10))])))
 
