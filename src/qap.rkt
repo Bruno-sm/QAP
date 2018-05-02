@@ -2,7 +2,7 @@
 
 (require racket/cmdline)
 (require "data-reader.rkt" "qap-representation-utils.rkt")
-(require "greedy.rkt" "local-search.rkt" "tabu-search.rkt")
+(require "greedy.rkt" "local-search.rkt" "tabu-search.rkt" "genetic.rkt" "genetic-operators.rkt")
 
 
 (struct cli-options (algorithm
@@ -53,6 +53,36 @@
     [("--stm-tabu-search")
      "Uses the local search algorithm with variable neighbourhood descent"
      (set-cli-options-algorithm! options 'stm-tabu)]
+    [("--genetic-gen-pos")
+     "Uses a generational genetic algorithm with positional crossover"
+     (set-cli-options-algorithm! options 'gen-gp)]
+    [("--genetic-gen-pmx")
+     "Uses a generational genetic algorithm with PMX crossover"
+     (set-cli-options-algorithm! options 'gen-gpmx)]
+    [("--genetic-st-pos")
+     "Uses a steady genetic algorithm with positional crossover"
+     (set-cli-options-algorithm! options 'gen-sp)]
+    [("--genetic-st-pmx")
+     "Uses a steady genetic algorithm with PMX crossover"
+     (set-cli-options-algorithm! options 'gen-spmx)]
+    [("--memetic-all-pos")
+     "Uses a generational genetic algorithm with positional crossover and local search over all the population every 10 generations"
+     (set-cli-options-algorithm! options 'mem-all-pos)]
+    [("--memetic-rand-pos")
+     "Uses a generational genetic algorithm with positional crossover and local search over a random 10% of the population every 10 generations"
+     (set-cli-options-algorithm! options 'mem-rand-pos)]
+    [("--memetic-best-pos")
+     "Uses a generational genetic algorithm with positional crossover and local search over the best 10% of the population every 10 generations"
+     (set-cli-options-algorithm! options 'mem-best-pos)]
+    [("--memetic-all-pmx")
+     "Uses a generational genetic algorithm with PMX crossover and local search over all the population every 10 generations"
+     (set-cli-options-algorithm! options 'mem-all-pmx)]
+    [("--memetic-rand-pmx")
+     "Uses a generational genetic algorithm with PMX crossover and local search over a random 10% of the population every 10 generations"
+     (set-cli-options-algorithm! options 'mem-rand-pmx)]
+    [("--memetic-best-pmx")
+     "Uses a generational genetic algorithm with PMX crossover and local search over the best 10% of the population every 10 generations"
+     (set-cli-options-algorithm! options 'mem-best-pmx)]
     #:args (file . more-files) (set! files (cons file more-files)))
   (random-seed (cli-options-seed options))
   (set! files (map (lambda (f) (build-path (current-directory) f)) files))  
@@ -72,7 +102,48 @@
          (values local-search `(,(cli-options-max-iterations options)
                                 ,vnd-selection))]
         [(symbol=? alg 'stm-tabu)
-         (values stm-tabu-search `(,(cli-options-max-iterations options)))])))
+         (values stm-tabu-search `(,(cli-options-max-iterations options)))]
+        [(symbol=? alg 'gen-gp)
+         (values genetic-generational `(,(cli-options-max-iterations options)
+                                        ,position-crossover
+                                        50 0.7 0.001))]
+        [(symbol=? alg 'gen-gpmx)
+         (values genetic-generational `(,(cli-options-max-iterations options)
+                                        ,pmx-crossover
+                                        50 0.7 0.001))]
+        [(symbol=? alg 'gen-sp)
+         (values genetic-steady `(,(cli-options-max-iterations options)
+                                  ,position-crossover
+                                  50 0.001))]
+        [(symbol=? alg 'gen-spmx)
+         (values genetic-steady `(,(cli-options-max-iterations options)
+                                  ,pmx-crossover
+                                  50 0.001))]
+        [(symbol=? alg 'mem-all-pos)
+         (values memetic-all `(,(cli-options-max-iterations options)
+                               ,position-crossover
+                               10 0.7 0.001 10))]
+        [(symbol=? alg 'mem-rand-pos)
+         (values memetic-rand `(,(cli-options-max-iterations options)
+                               ,position-crossover
+                               10 0.7 0.001 10))]
+        [(symbol=? alg 'mem-best-pos)
+         (values memetic-rand `(,(cli-options-max-iterations options)
+                               ,position-crossover
+                               10 0.7 0.001 10))]
+        [(symbol=? alg 'mem-all-pmx)
+         (values memetic-all `(,(cli-options-max-iterations options)
+                               ,pmx-crossover
+                               10 0.7 0.001 10))]
+        [(symbol=? alg 'mem-rand-pmx)
+         (values memetic-rand `(,(cli-options-max-iterations options)
+                               ,pmx-crossover
+                               10 0.7 0.001 10))]
+        [(symbol=? alg 'mem-best-pmx)
+         (values memetic-rand `(,(cli-options-max-iterations options)
+                               ,pmx-crossover
+                               10 0.7 0.001 10))])))
+
   (for-each (lambda (file) (print-solution algorithm file options alg-args)) files))
 
 (define (print-solution algorithm file cli-options [args empty])
