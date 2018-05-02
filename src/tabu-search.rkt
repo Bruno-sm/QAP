@@ -5,7 +5,7 @@
 (require "qap-representation-utils.rkt" "vector.rkt")
 
 
-(define (stm-tabu-search size flow-matrix distance-matrix max-iterations)
+(define (stm-tabu-search size flow-matrix distance-matrix max-eval)
   (displayln "Starting tabu search")
   (define goodness-diff
           (lambda (s tr prev-diff prev-tr)
@@ -20,13 +20,16 @@
   (displayln (format "tabu tenure: ~a" tabu-tenure))
   (define change-tenure-counter (* 2 tabu-tenure))
   (define found-neighbour #t)
-  (for ([i max-iterations] #:break (not found-neighbour)) 
+  (define evaluations 0)
+  (for ([i (in-naturals)] #:break (or (not found-neighbour) (> evaluations max-eval))) 
+    (displayln (format "Iteration ~a" i))
     (cond [(= 0 change-tenure-counter)
            (set! tabu-tenure (+ (* (random) (* 0.9 size)) (* 1.1 size)))
            (displayln (format "tabu tenure: ~a" tabu-tenure))
            (set! change-tenure-counter (* 2 tabu-tenure))]
           [else (set! change-tenure-counter (sub1 change-tenure-counter))])
-    (set!-values (found-neighbour new-solution prev-transposition prev-diff)
+    (define ev 0)
+    (set!-values (found-neighbour new-solution prev-transposition prev-diff ev)
                  (tabu-selection new-solution
                                  tabu-hash
                                  i
@@ -34,6 +37,7 @@
                                  prev-transposition
                                  prev-diff
                                  goodness-diff))
+    (set! evaluations (+ evaluations ev))
     (displayln (format "Stuck: ~a" (not found-neighbour)))
     (for ([unit size] [loc new-solution])
       (hash-set! tabu-hash (list unit loc) i)
@@ -71,12 +75,14 @@
   (define size (vector-length solution))
   (define diff (make-matrix size size '(0 #f)))
   (define found-neighbour #f)
+  (define evaluations 0)
   (for* ([i size] [j i]
          #:unless (or (< iteration (+ (hash-ref tabu-hash (list i (vector-ref solution j))
                                                 (- tabu-tenure)) tabu-tenure))
                       (< iteration (+ (hash-ref tabu-hash (list j (vector-ref solution i))
                                                 (- tabu-tenure)) tabu-tenure)))); TODO aspiration criterion 
     (matrix-set! diff i j (list (goodness-diff solution (list i j) prev-diff prev-transposition) #t))
+    (set! evaluations (add1 evaluations))
     (displayln (format "Goodness diff permutation ~a: ~a" `(,i ,j) (first (matrix-ref diff i j))))
     (cond [(or (< (first (matrix-ref diff i j)) best-transposition-diff)
                (not found-neighbour))
@@ -86,4 +92,4 @@
   (define new-solution (vector-copy solution))
   (permute! new-solution best-transposition)
   (displayln (format "Best neighbor ~a" new-solution))
-  (values found-neighbour new-solution best-transposition diff))
+  (values found-neighbour new-solution best-transposition diff evaluations))

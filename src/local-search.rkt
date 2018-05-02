@@ -5,17 +5,23 @@
 (require "qap-representation-utils.rkt" "vector.rkt")
 
 
-(define (local-search size flow-matrix distance-matrix max-iterations select-neighbor)
-  (define solution-vector (vector-shuffle (build-vector size (lambda (i) i))))
+(define (local-search size flow-matrix distance-matrix max-eval select-neighbor [base #f] [ret-eval #f])
+  (define solution-vector
+    (cond [base base]
+          [else (vector-shuffle (build-vector size (lambda (i) i)))]))
   (define is-local-minimum #f)
   (define select-neighbor-fun! (first select-neighbor))
   (define select-neighbor-extra-args-builder (second select-neighbor))
   (define select-neighbor-extra-args (select-neighbor-extra-args-builder size))
   (define gpd (lambda (s . indexes)
                 (apply qap-goodness-permutation-diff (append (list s flow-matrix distance-matrix) indexes))))
-  (for ([i max-iterations] #:break is-local-minimum)
+  (define evaluations 0)
+  (for ([i (in-naturals)] #:break (or is-local-minimum (> evaluations max-eval)))
     (define select-neighbor-args (append `(,solution-vector ,gpd) select-neighbor-extra-args))
-    (set! is-local-minimum (apply select-neighbor-fun! select-neighbor-args)))
+    (define ev 0)
+    (set!-values (is-local-minimum ev) (apply select-neighbor-fun! select-neighbor-args))
+    (set! evaluations (+ evaluations ev)))
+  (cond [ret-eval (vector-set! ret-eval 0 evaluations)])
   (vector->list solution-vector))
 
 (define best-first-dlb-selection
@@ -23,9 +29,11 @@
           (displayln (format "Searching first better neighbor for ~a" solution-vector))
           (define improves #f)
           (define size (vector-length solution-vector))
+          (define evaluations 0)
           (for ([i size] #:unless (vector-ref dlb-vector i) #:break improves) 
             (for ([j size] #:unless (= i j) #:break improves)
               (define g-diff (goodness-permutation-diff solution-vector (list i j)))
+              (set! evaluations (add1 evaluations))
               (displayln (format "Goodness diff permutation ~a: ~a" `(,i ,j) g-diff))
               (cond [(< g-diff 0)
                      (permute! solution-vector (list i j))
@@ -34,7 +42,7 @@
                      (vector-set! dlb-vector j #f)
                      (set! improves #t)]))
             (cond [(not improves) (vector-set! dlb-vector i #t)]))
-          (not improves))
+          (values (not improves) evaluations))
         ; Builds extra parameters for best-first-dlb-selection
         (lambda (size) (list (make-vector size #f)))))
 
@@ -44,8 +52,10 @@
           (define best-permutation '(0 0))
           (define best-permutation-diff 0)
           (define size (vector-length solution-vector))
+          (define evaluations 0)
           (for* ([i size] [j i])
             (define g-diff (goodness-permutation-diff solution-vector (list i j)))
+            (set! evaluations (add1 evaluations))
             (displayln (format "Goodness diff permutation ~a: ~a" `(,i ,j) g-diff))
             (cond [(< g-diff best-permutation-diff)
             (set! best-permutation (list i j))
@@ -53,8 +63,8 @@
           (cond [(< best-permutation-diff 0)
                  (permute! solution-vector best-permutation)
                  (displayln (format "Best neighbor ~a" solution-vector))
-                 #f]
-                [else #t]))
+                 (values #f evaluations)]
+                [else (values #t evaluations)]))
         ; Builds extra parameters for best-neighbor-selection
         (lambda (size) empty)))
 
@@ -63,13 +73,16 @@
           (define is-local-max #t)
           (define size (vector-length solution-vector))
           (define neigh-gen! (vector-ref neighbor-structures 0))
+          (define evaluations 0)
           (for ([k 3] #:break (not is-local-max))
             (displayln (format "Using neigbourhood ~a" k))
             (set! neigh-gen! (vector-ref neighbor-structures k))
-            (set! is-local-max 
+            (define ev 0)
+            (set!-values (is-local-max ev) 
               (neigh-gen! solution-vector goodness-permutation-diff (vector-ref dlb-vectors k)))
+            (set! evaluations (+ evaluations ev))
             (cond [is-local-max (vector-set! dlb-vectors k (make-vector size #f))]))
-          is-local-max)
+          (values is-local-max evaluations))
         (lambda (size) (list (vector (make-vector size #f) (make-vector size #f) (make-vector size #f))))))
 
 ; Neighbor structures for vnd
@@ -79,25 +92,29 @@
   `(,(lambda (sol goodness-permutation-diff dlb-vector)
        (define improves #f)
        (define size (vector-length sol))
+       (define evaluations 0)
        (for ([i size] #:unless (vector-ref dlb-vector i) #:break improves)
          (for ([j size] #:unless (= i j) #:break improves)
            (define g-diff (goodness-permutation-diff sol (list i j)))
+           (set! evaluations (add1 evaluations))
            (cond [(< g-diff 0)
                   (permute! sol (list i j))
                   (vector-set! dlb-vector i #f)
                   (vector-set! dlb-vector j #f)
                   (set! improves #t)]))
          (cond [(not improves) (vector-set! dlb-vector i #t)]))
-       (not improves))
+       (values (not improves) evaluations))
 
     ; Selects the first better neighbor with three elements permutations
     ,(lambda (sol goodness-permutation-diff dlb-vector)
        (define improves #f)
        (define size (vector-length sol))
+       (define evaluations 0)
        (for ([i size] #:unless (vector-ref dlb-vector i) #:break (or improves (= i 90)))
          (for* ([j size] [k i] #:unless (or (= i j) (= k j)) #:break improves)
            (define g-diff
              (goodness-permutation-diff sol (list i j) (list k j)))
+           (set! evaluations (add1 evaluations))
            (cond [(< g-diff 0)
                   (permute! sol (list i j) (list k j))
                   (vector-set! dlb-vector i #f)
@@ -105,18 +122,20 @@
                   (vector-set! dlb-vector k #f)
                   (set! improves #t)]))
          (cond [(not improves) (vector-set! dlb-vector i #t)]))
-       (not improves))
+       (values (not improves) evaluations))
 
     ; Selects the first better neighbor with four elements permutations
     ,(lambda (sol goodness-permutation-diff dlb-vector)
        (define improves #f)
        (define size (vector-length sol))
+       (define evaluations 0)
        (for ([i size] #:unless (vector-ref dlb-vector i) #:break (or improves (= i 40)))
          (for* ([j i] [k i] [s k]
                 #:unless (or (= j k) (= j s))
                 #:break improves)
            (define g-diff
              (goodness-permutation-diff sol (list i j) (list k s)))
+           (set! evaluations (add1 evaluations))
            (cond [(< g-diff 0)
                   (permute! sol (list i j) (list k s))
                   (vector-set! dlb-vector i #f)
@@ -125,4 +144,4 @@
                   (vector-set! dlb-vector s #f)
                   (set! improves #t)]))
          (cond [(not improves) (vector-set! dlb-vector i #t)]))
-       (not improves)))))
+       (values (not improves) evaluations)))))
