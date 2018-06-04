@@ -3,7 +3,7 @@
 (require "genetic-operators.rkt" "qap-representation-utils.rkt"
          "vector.rkt" "local-search.rkt")
 
-(provide genetic-generational genetic-steady memetic-all memetic-rand)
+(provide genetic-generational genetic-steady memetic-all memetic-rand memetic-best)
 
 
 (define (genetic-generational size flow-matrix distance-matrix max-eval crossover population-size cross-prob mut-prob)

@@ -128,7 +128,7 @@
                                ,position-crossover
                                10 0.7 0.001 10))]
         [(symbol=? alg 'mem-best-pos)
-         (values memetic-rand `(,(cli-options-max-evaluations options)
+         (values memetic-best `(,(cli-options-max-evaluations options)
                                ,position-crossover
                                10 0.7 0.001 10))]
         [(symbol=? alg 'mem-all-pmx)
@@ -140,7 +140,7 @@
                                ,pmx-crossover
                                10 0.7 0.001 10))]
         [(symbol=? alg 'mem-best-pmx)
-         (values memetic-rand `(,(cli-options-max-evaluations options)
+         (values memetic-best `(,(cli-options-max-evaluations options)
                                ,pmx-crossover
                                10 0.7 0.001 10))])))
 
